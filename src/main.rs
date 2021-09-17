@@ -11,8 +11,8 @@ const BOARD_SIZE: usize = 4;
 #[derive(Debug, Clone)]
 struct Game {
     size: usize,
-    state: Vec<i8>,
-    transpose_table: HashMap<Vec<i8>, i8>
+    state: [i8; BOARD_SIZE * BOARD_SIZE],
+    transpose_table: HashMap<[i8; BOARD_SIZE * BOARD_SIZE], i8>
 }
 
 
@@ -20,13 +20,13 @@ impl Game {
 
     fn new() -> Game {
         return Game{
-            state: vec![0; BOARD_SIZE * BOARD_SIZE],
+            state: [0; BOARD_SIZE * BOARD_SIZE],
             size: BOARD_SIZE,
             transpose_table: HashMap::new()
         }
     }
 
-    fn get_board_state(&self) -> Vec<i8> {
+    fn get_board_state(&self) -> [i8; BOARD_SIZE * BOARD_SIZE] {
         return self.state.clone();
     }
 
