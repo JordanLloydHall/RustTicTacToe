@@ -11,7 +11,7 @@ const BOARD_SIZE: usize = 4;
 #[derive(Debug, Clone)]
 struct Game {
     size: usize,
-    states: Vec<i8>,
+    state: Vec<i8>,
     transpose_table: HashMap<Vec<i8>, i8>
 }
 
@@ -20,18 +20,18 @@ impl Game {
 
     fn new() -> Game {
         return Game{
-            states: vec![0; BOARD_SIZE * BOARD_SIZE],
+            state: vec![0; BOARD_SIZE * BOARD_SIZE],
             size: BOARD_SIZE,
             transpose_table: HashMap::new()
         }
     }
 
     fn get_board_state(&self) -> Vec<i8> {
-        return self.states.clone();
+        return self.state.clone();
     }
 
     fn execute_move(&mut self, pos: usize, player: i8) {
-        self.states[pos] = player;
+        self.state[pos] = player;
     }
 
     fn get_winner(&self) -> Option<i8> {
@@ -127,7 +127,7 @@ impl Game {
                     val = cmp::max(val, minimaxed_score);
                     self.transpose_table.insert(curr_state, minimaxed_score);
                 }
-                self.states = old_state;
+                self.state = old_state;
 
                 if val >= beta {
                     break;
@@ -153,7 +153,7 @@ impl Game {
                     val = cmp::min(val, minimaxed_score);
                     self.transpose_table.insert(curr_state, minimaxed_score);
                 }
-                self.states = old_state;
+                self.state = old_state;
 
                 if val <= alpha {
                     break;
