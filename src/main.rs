@@ -4,10 +4,14 @@ use rayon::prelude::*;
 use std::collections::HashMap;
 use std::time::Instant;
 
+// Use 3 or 4. 5 is not recommended all that much.
+const BOARD_SIZE: usize = 4;
+
+// Game struct uses a stack approach to 
 #[derive(Debug, Clone)]
 struct Game {
     size: usize,
-    states: Vec<Vec<i8>>,
+    states: Vec<i8>,
     transpose_table: HashMap<Vec<i8>, i8>
 }
 
@@ -16,20 +20,18 @@ impl Game {
 
     fn new() -> Game {
         return Game{
-            states: vec![vec![0; 16]],
-            size: 4,
+            states: vec![0; BOARD_SIZE * BOARD_SIZE],
+            size: BOARD_SIZE,
             transpose_table: HashMap::new()
         }
     }
 
     fn get_board_state(&self) -> Vec<i8> {
-        return self.states.last().expect("Can't get current game state").clone();
+        return self.states.clone();
     }
 
     fn execute_move(&mut self, pos: usize, player: i8) {
-        let mut new_state = self.get_board_state();
-        new_state[pos] = player;
-        self.states.push(new_state);
+        self.states[pos] = player;
     }
 
     fn get_winner(&self) -> Option<i8> {
@@ -114,18 +116,19 @@ impl Game {
             let moves = self.get_legal_moves();
             let mut val = -1;
             for mov in moves {
+                let old_state = self.get_board_state();
                 self.execute_move(mov, player);
 
                 let curr_state = self.get_board_state();
                 if self.transpose_table.contains_key(&curr_state) {
                     val = cmp::max(val, *self.transpose_table.get(&curr_state).expect("Transpostition table does not have state as key"));
-                    // println!("Transposition table found one!");
                 } else {
                     let minimaxed_score = self.min_max(if player == 1 { 2 } else { 1 }, false, alpha, beta, depth - 1);
                     val = cmp::max(val, minimaxed_score);
                     self.transpose_table.insert(curr_state, minimaxed_score);
                 }
-                self.states.pop();
+                self.states = old_state;
+
                 if val >= beta {
                     break;
                 }
@@ -139,8 +142,10 @@ impl Game {
             let moves = self.get_legal_moves();
             let mut val = 1;
             for mov in moves {
+                let old_state = self.get_board_state();
                 self.execute_move(mov, player);
                 let curr_state = self.get_board_state();
+                
                 if self.transpose_table.contains_key(&curr_state) {
                     val = cmp::min(val, *self.transpose_table.get(&curr_state).expect("Transpostition table does not have state as key"));
                 } else {
@@ -148,7 +153,8 @@ impl Game {
                     val = cmp::min(val, minimaxed_score);
                     self.transpose_table.insert(curr_state, minimaxed_score);
                 }
-                self.states.pop();
+                self.states = old_state;
+
                 if val <= alpha {
                     break;
                 }
@@ -199,10 +205,8 @@ impl Game {
             }
             let mut new_board = self.clone();
             
-
             new_board.execute_move(n, player);
             let score = new_board.min_max(if player == 1 { 2 } else { 1 }, false, i8::MIN, i8::MAX, i8::MAX);
-            new_board.states.pop();
             return score;
         })
         .collect();
